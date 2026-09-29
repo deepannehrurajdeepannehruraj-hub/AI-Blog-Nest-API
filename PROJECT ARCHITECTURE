@@ -1,0 +1,677 @@
+1. Technical Architecture
+Architecture
+                    ┌─────────────────────┐
+                    │       User          │
+                    │ Browser / Mobile    │
+                    └──────────┬──────────┘
+                               │ HTTP
+                               ▼
+                    ┌─────────────────────┐
+                    │       View          │
+                    │ HTML / CSS / JS     │
+                    │    (Frontend)       │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │     Controller      │
+                    │  Request Handling   │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │       Model         │
+                    │ Business Logic      │
+                    │ Database Operations │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │      Database       │
+                    │       MySQL         │
+                    └─────────────────────┘
+
+Technology Stack
+Layer	Technology
+Frontend	HTML, CSS, JavaScript, Bootstrap
+Backend	PHP
+Architecture	MVC
+Database	MySQL
+Web Server	Apache
+Development	XAMPP
+API	REST API
+Authentication	Session-based login
+
+2. ER Diagram
+Entities
+User
+Student
+Course
+Enrollment
+Attendance
+Marks
+┌───────────────┐
+│     USERS     │
+├───────────────┤
+│ PK user_id    │
+│ name          │
+│ email         │
+│ password      │
+│ role          │
+└───────┬───────┘
+        │
+        │ 1
+        │
+        │ N
+┌───────▼───────┐
+│   STUDENTS    │
+├───────────────┤
+│ PK student_id │
+│ name          │
+│ email         │
+│ phone         │
+│ address       │
+└───────┬───────┘
+        │
+        │ 1
+        │
+        │ N
+┌───────▼──────────┐
+│    ENROLLMENT    │
+├──────────────────┤
+│ PK enrollment_id │
+│ FK student_id    │
+│ FK course_id     │
+│ enrollment_date  │
+└────────┬─────────┘
+         │
+         │ N
+         │
+         │ 1
+┌────────▼────────┐
+│     COURSES     │
+├─────────────────┤
+│ PK course_id    │
+│ course_name     │
+│ description     │
+│ duration        │
+└─────────────────┘
+
+STUDENTS ────────< ATTENDANCE
+STUDENTS ────────< MARKS
+COURSES  ────────< MARKS
+
+Database SQL
+CREATE DATABASE student_management;
+
+USE student_management;
+
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('admin', 'teacher', 'student') DEFAULT 'student'
+);
+
+CREATE TABLE students (
+    student_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    phone VARCHAR(20),
+    address TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE courses (
+    course_id INT AUTO_INCREMENT PRIMARY KEY,
+    course_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    duration VARCHAR(50)
+);
+
+CREATE TABLE enrollment (
+    enrollment_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT,
+    course_id INT,
+    enrollment_date DATE,
+    FOREIGN KEY (student_id) REFERENCES students(student_id),
+    FOREIGN KEY (course_id) REFERENCES courses(course_id)
+);
+
+CREATE TABLE attendance (
+    attendance_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT,
+    attendance_date DATE,
+    status ENUM('Present', 'Absent'),
+    FOREIGN KEY (student_id) REFERENCES students(student_id)
+);
+
+CREATE TABLE marks (
+    mark_id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT,
+    course_id INT,
+    marks INT,
+    FOREIGN KEY (student_id) REFERENCES students(student_id),
+    FOREIGN KEY (course_id) REFERENCES courses(course_id)
+);
+
+3. Features
+Admin
+Admin login
+Dashboard
+Add student
+Update student
+Delete student
+View students
+Add courses
+Manage courses
+Manage teachers
+View attendance
+View marks
+Generate reports
+Teacher
+Teacher login
+View assigned courses
+View students
+Mark attendance
+Enter marks
+Update marks
+View student performance
+Student
+Student login
+View profile
+View enrolled courses
+View attendance
+View marks
+View academic performance
+Security
+Login authentication
+Password hashing
+Session management
+Role-based authorization
+Input validation
+SQL injection protection using prepared statements
+4. Roles and Responsibilities
+Role	Responsibilities
+Admin	Manage users, students, courses and system
+Teacher	Manage attendance and marks
+Student	View courses, attendance and marks
+Database	Store and retrieve application data
+System	Authentication, authorization and validation
+
+5. User Flow
+Admin Flow
+Start
+  ↓
+Login
+  ↓
+Validate Credentials
+  ↓
+Admin Dashboard
+  ↓
+ ┌──────────────┬──────────────┬──────────────┐
+ ↓              ↓              ↓
+Students       Courses       Teachers
+ ↓              ↓              ↓
+Add/Edit/Delete Add/Edit/Delete Manage
+  ↓
+Reports
+  ↓
+Logout
+
+Teacher Flow
+Login
+  ↓
+Teacher Dashboard
+  ↓
+Select Course
+  ↓
+View Students
+  ↓
+Mark Attendance
+  ↓
+Enter Marks
+  ↓
+Save
+  ↓
+Logout
+
+Student Flow
+Login
+  ↓
+Student Dashboard
+  ↓
+View Profile
+  ↓
+View Courses
+  ↓
+View Attendance
+  ↓
+View Marks
+  ↓
+Logout
+
+6. MVC Pattern
+MVC means:
+M = Model
+V = View
+C = Controller
+
+Model
+Responsible for:
+Database communication
+Data retrieval
+Data insertion
+Data update
+Data deletion
+View
+Responsible for:
+HTML pages
+Forms
+Tables
+Dashboard
+User interface
+Controller
+Responsible for:
+Receiving requests
+Calling models
+Processing data
+Selecting views
+Handling application logic
+7. Project Folder Structure
+student-management/
+│
+├── app/
+│   ├── controllers/
+│   │   ├── AuthController.php
+│   │   ├── StudentController.php
+│   │   ├── CourseController.php
+│   │   └── DashboardController.php
+│   │
+│   ├── models/
+│   │   ├── User.php
+│   │   ├── Student.php
+│   │   ├── Course.php
+│   │   ├── Attendance.php
+│   │   └── Mark.php
+│   │
+│   └── views/
+│       ├── auth/
+│       │   └── login.php
+│       │
+│       ├── dashboard/
+│       │   └── index.php
+│       │
+│       ├── students/
+│       │   ├── index.php
+│       │   ├── create.php
+│       │   └── edit.php
+│       │
+│       └── courses/
+│           ├── index.php
+│           └── create.php
+│
+├── config/
+│   └── database.php
+│
+├── public/
+│   ├── index.php
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       └── script.js
+│
+├── routes/
+│   └── web.php
+│
+└── database/
+    └── database.sql
+
+8. Database Connection
+config/database.php
+<?php
+
+class Database
+{
+    private $host = "localhost";
+    private $db_name = "student_management";
+    private $username = "root";
+    private $password = "";
+
+    public $conn;
+
+    public function connect()
+    {
+        $this->conn = null;
+
+        try {
+            $this->conn = new PDO(
+                "mysql:host=" . $this->host .
+                ";dbname=" . $this->db_name,
+                $this->username,
+                $this->password
+            );
+
+            $this->conn->setAttribute(
+                PDO::ATTR_ERRMODE,
+                PDO::ERRMODE_EXCEPTION
+            );
+
+        } catch (PDOException $e) {
+            die("Database connection failed: " . $e->getMessage());
+        }
+
+        return $this->conn;
+    }
+}
+
+9. Model
+app/models/Student.php
+<?php
+
+class Student
+{
+    private $conn;
+    private $table = "students";
+
+    public function __construct($db)
+    {
+        $this->conn = $db;
+    }
+
+    public function getAll()
+    {
+        $query = "SELECT * FROM " . $this->table;
+
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function create($name, $email, $phone, $address)
+    {
+        $query = "INSERT INTO students
+                  (name, email, phone, address)
+                  VALUES (?, ?, ?, ?)";
+
+        $stmt = $this->conn->prepare($query);
+
+        return $stmt->execute([
+            $name,
+            $email,
+            $phone,
+            $address
+        ]);
+    }
+
+    public function delete($id)
+    {
+        $query = "DELETE FROM students
+                  WHERE student_id = ?";
+
+        $stmt = $this->conn->prepare($query);
+
+        return $stmt->execute([$id]);
+    }
+}
+
+10. Controller
+app/controllers/StudentController.php
+<?php
+
+require_once "config/database.php";
+require_once "app/models/Student.php";
+
+class StudentController
+{
+    private $student;
+
+    public function __construct()
+    {
+        $database = new Database();
+        $db = $database->connect();
+
+        $this->student = new Student($db);
+    }
+
+    public function index()
+    {
+        $students = $this->student->getAll();
+
+        require "app/views/students/index.php";
+    }
+
+    public function create()
+    {
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+            $name = $_POST["name"];
+            $email = $_POST["email"];
+            $phone = $_POST["phone"];
+            $address = $_POST["address"];
+
+            $this->student->create(
+                $name,
+                $email,
+                $phone,
+                $address
+            );
+
+            header("Location: index.php?action=students");
+            exit;
+        }
+
+        require "app/views/students/create.php";
+    }
+}
+
+11. View
+app/views/students/index.php
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Students</title>
+    <link rel="stylesheet"
+          href="public/css/style.css">
+</head>
+
+<body>
+
+<h1>Student Management</h1>
+
+<a href="index.php?action=create_student">
+    Add Student
+</a>
+
+<table border="1">
+
+<tr>
+    <th>ID</th>
+    <th>Name</th>
+    <th>Email</th>
+    <th>Phone</th>
+    <th>Address</th>
+</tr>
+
+<?php foreach ($students as $student): ?>
+
+<tr>
+    <td>
+        <?= htmlspecialchars($student['student_id']) ?>
+    </td>
+
+    <td>
+        <?= htmlspecialchars($student['name']) ?>
+    </td>
+
+    <td>
+        <?= htmlspecialchars($student['email']) ?>
+    </td>
+
+    <td>
+        <?= htmlspecialchars($student['phone']) ?>
+    </td>
+
+    <td>
+        <?= htmlspecialchars($student['address']) ?>
+    </td>
+</tr>
+
+<?php endforeach; ?>
+
+</table>
+
+</body>
+</html>
+
+12. Add Student View
+app/views/students/create.php
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Student</title>
+</head>
+
+<body>
+
+<h1>Add Student</h1>
+
+<form method="POST">
+
+    <label>Name</label>
+    <input type="text" name="name" required>
+
+    <br><br>
+
+    <label>Email</label>
+    <input type="email" name="email" required>
+
+    <br><br>
+
+    <label>Phone</label>
+    <input type="text" name="phone">
+
+    <br><br>
+
+    <label>Address</label>
+    <textarea name="address"></textarea>
+
+    <br><br>
+
+    <button type="submit">
+        Save Student
+    </button>
+
+</form>
+
+</body>
+</html>
+
+13. Main Router
+public/index.php
+<?php
+
+require_once "../app/controllers/StudentController.php";
+
+$action = $_GET["action"] ?? "students";
+
+$controller = new StudentController();
+
+switch ($action) {
+
+    case "students":
+        $controller->index();
+        break;
+
+    case "create_student":
+        $controller->create();
+        break;
+
+    default:
+        $controller->index();
+        break;
+}
+
+14. CSS
+public/css/style.css
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+    margin: 40px;
+}
+
+h1 {
+    color: #333;
+}
+
+table {
+    width: 100%;
+    background: white;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th,
+td {
+    padding: 12px;
+    border: 1px solid #ddd;
+}
+
+th {
+    background: #1976d2;
+    color: white;
+}
+
+input,
+textarea {
+    padding: 10px;
+    width: 300px;
+}
+
+button {
+    padding: 10px 20px;
+    background: #1976d2;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+15. Complete MVC Request Flow
+User
+ │
+ │ HTTP Request
+ ▼
+public/index.php
+ │
+ ▼
+Router
+ │
+ ▼
+StudentController
+ │
+ │ calls
+ ▼
+Student Model
+ │
+ │ SQL Query
+ ▼
+MySQL Database
+ │
+ │ Result
+ ▼
+Student Model
+ │
+ ▼
+StudentController
+ │
+ ▼
+Student View
+ │
+ ▼
+HTML Response
+ │
+ ▼
+User Browser
